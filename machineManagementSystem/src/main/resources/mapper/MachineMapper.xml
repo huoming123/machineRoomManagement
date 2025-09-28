@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.machineManagementSystem.mapper.MachineMapper">
+
+    <resultMap type="com.design.machineManagementSystem.pojo.Machine" id="MachineMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="roomNo" column="room_no" jdbcType="VARCHAR"/>
+        <result property="num" column="num" jdbcType="INTEGER"/>
+        <result property="describ" column="describ" jdbcType="VARCHAR"/>
+        <result property="image" column="image" jdbcType="VARCHAR"/>
+        <result property="createdAt" column="created_at" jdbcType="TIMESTAMP"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="managerId" column="manager_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="MachineMap">
+        select
+          id, room_no, num, describ, image, created_at, created_by, manager_id
+        from machine
+        where id = #{id}
+    </select>
+
+
+
+    <!--新增所有列-->
+    <insert id="increased" keyProperty="id" useGeneratedKeys="true">
+        insert into machine(room_no, num, describ, image, created_at, created_by, manager_id)
+        values (#{roomNo}, #{num}, #{describ}, #{image}, now(), #{createdBy}, #{managerId})
+    </insert>
+        <!--用select进行分页查询-->
+      <select id="getPageSearchByCondition" resultMap="MachineMap">
+        select *  from machine
+          <if test="page.key.roomNo != null and page.key.roomNo!=''">
+              where room_no = #{page.key.roomNo}
+          </if>
+            <!--排序 desc是降序-->
+        order by
+        id desc
+        <!--分页查询-->
+      
+        limit  #{page.startNum} , #{page.pageSize}
+    </select>
+     <!--分页查询条数-->
+    <select id="getPageSearchCount" resultType="int">
+        select count(id) as count from machine
+        <if test="page.key.roomNo != null and page.key.roomNo!=''">
+            where room_no = #{page.key.roomNo}
+        </if>
+    </select>
+    <!--通过主键修改数据-->
+    <update id="edit">
+        update machine
+        <set>
+            <if test="roomNo != null and roomNo != ''">
+                room_no = #{roomNo},
+            </if>
+            <if test="num != null">
+                num = #{num},
+            </if>
+            <if test="describ != null and describ != ''">
+                describ = #{describ},
+            </if>
+            <if test="image != null and image != ''">
+                image = #{image},
+            </if>
+            <if test="createdAt != null">
+                created_at = #{createdAt},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="managerId != null">
+                manager_id = #{managerId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from machine where id = #{id}
+    </delete>
+    <select id="getByMachineRoom" resultMap="MachineMap">
+         select * from machine where room_no=#{roomNo};
+     </select>
+    <select id="getMachineList" resultMap="MachineMap">
+         select * from machine where created_at is not null;
+     </select>
+
+</mapper>
+

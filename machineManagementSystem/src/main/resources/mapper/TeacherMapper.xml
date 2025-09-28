@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.machineManagementSystem.mapper.TeacherMapper">
+
+    <resultMap type="com.design.machineManagementSystem.pojo.Teacher" id="TeacherMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="userNo" column="user_no" jdbcType="VARCHAR"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="createdAt" column="created_at" jdbcType="TIMESTAMP"/>
+        <result property="sex" column="sex" jdbcType="VARCHAR"/>
+        <result property="classess" column="classess" jdbcType="VARCHAR"/>
+        <result property="image" column="image" jdbcType="VARCHAR"/>
+        <result property="professional" column="professional" jdbcType="VARCHAR"/>
+        <result property="department" column="department" jdbcType="VARCHAR"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="checked" column="checked" jdbcType="INTEGER"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="TeacherMap">
+        select
+          id, user_no, user_name, created_at, sex, classess, image, professional, department, created_by, checked, password
+        from teacher
+        where id = #{id}
+    </select>
+
+
+
+    <!--新增所有列-->
+    <insert id="increased" keyProperty="id" useGeneratedKeys="true">
+        insert into teacher(user_no, user_name, created_at, sex, classess, image, professional, department, created_by, checked, password)
+        values (#{userNo}, #{userName}, now(), #{sex}, #{classess}, #{image}, #{professional}, #{department}, #{createdBy}, 0, #{password})
+    </insert>
+        <!--用select进行分页查询-->
+      <select id="getPageSearchByCondition" resultMap="TeacherMap">
+
+        select *  from teacher where created_at is not null
+          <if test="page.key.userName != null and page.key.userName != ''">
+              and  user_name like '%' #{page.key.userName}  '%'
+          </if>
+          <if test="page.key.userNo != null and page.key.userNo != ''">
+              and  user_no like '%' #{page.key.userNo}  '%'
+          </if>
+            <!--排序 desc是降序-->
+        order by
+        id desc
+        <!--分页查询-->
+      
+        limit  #{page.startNum} , #{page.pageSize}
+    </select>
+     <!--分页查询条数-->
+    <select id="getPageSearchCount" resultType="int">
+        select count(id) as count from teacher   where created_at is not null
+        <if test="page.key.userName != null and page.key.userName != ''">
+            and  user_name like '%' #{page.key.userName}  '%'
+        </if>
+        <if test="page.key.userNo != null and page.key.userNo != ''">
+            and  user_no like '%' #{page.key.userNo}  '%'
+        </if>
+    </select>
+
+   
+
+    <!--通过主键修改数据-->
+    <update id="edit">
+        update teacher
+        <set>
+            <if test="userNo != null and userNo != ''">
+                user_no = #{userNo},
+            </if>
+            <if test="userName != null and userName != ''">
+                user_name = #{userName},
+            </if>
+            <if test="createdAt != null">
+                created_at = #{createdAt},
+            </if>
+            <if test="sex != null and sex != ''">
+                sex = #{sex},
+            </if>
+            <if test="classess != null and classess != ''">
+                classess = #{classess},
+            </if>
+            <if test="image != null and image != ''">
+                image = #{image},
+            </if>
+            <if test="professional != null and professional != ''">
+                professional = #{professional},
+            </if>
+            <if test="department != null and department != ''">
+                department = #{department},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="checked != null">
+                checked = #{checked},
+            </if>
+            <if test="password != null and password != ''">
+                password = #{password},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from teacher where id = #{id}
+    </delete>
+    <select id="getTeacherList"  resultMap="TeacherMap">
+         select * from teacher where created_at is not null ;
+    </select>
+    <select id="getByUserNo"  resultMap="TeacherMap">
+         select * from teacher where user_no =#{userNo};
+    </select>
+
+</mapper>
+

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.design.machineManagementSystem.mapper.BorrowMapper">
+
+    <resultMap type="com.design.machineManagementSystem.pojo.Borrow" id="BorrowMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="roomNo" column="room_no" jdbcType="VARCHAR"/>
+        <result property="studentId" column="student_id" jdbcType="INTEGER"/>
+        <result property="checked" column="checked" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="VARCHAR"/>
+        <result property="endTime" column="end_time" jdbcType="VARCHAR"/>
+        <result property="reason" column="reason" jdbcType="VARCHAR"/>
+        <result property="classTime" column="class_time" jdbcType="TIMESTAMP"/>
+        <result property="createdAt" column="created_at" jdbcType="TIMESTAMP"/>
+        <result property="createdBy" column="created_by" jdbcType="VARCHAR"/>
+        <result property="teacherId" column="teacher_id" jdbcType="INTEGER"/>
+        <result property="count" column="count" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="BorrowMap">
+        select
+          id, room_no, student_id, checked, start_time, end_time, reason, class_time, created_at, created_by, teacher_id
+        from borrow
+        where id = #{id}
+    </select>
+
+
+
+    <!--新增所有列-->
+    <insert id="increased" keyProperty="id" useGeneratedKeys="true">
+        insert into borrow(room_no, student_id, checked, start_time, end_time, reason, class_time, created_at, created_by, teacher_id)
+        values (#{roomNo}, #{studentId}, 0, #{startTime}, #{endTime}, #{reason}, #{classTime}, now(), #{createdBy}, #{teacherId})
+    </insert>
+        <!--用select进行分页查询-->
+      <select id="getPageSearchByCondition" resultMap="BorrowMap">
+        select *  from borrow where created_at is not null
+          <if test="page.key.studentId != null ">
+              and student_id = #{page.key.studentId}
+          </if>
+          <if test="page.key.teacherId != null ">
+              and teacher_id = #{page.key.teacherId}
+          </if>
+          <if test="page.key.roomNo != null and page.key.roomNo != ''">
+              and  room_no = #{page.key.roomNo}
+          </if>
+          <if test="page.key.checked != null ">
+              and checked = #{page.key.checked}
+          </if>
+          <!--使用时间搜索 不为空 则进入搜索条件-->
+          <if test="page.dateTime != null and page.dateTime != ''">
+              and  DATE_FORMAT(class_time,'%Y-%m-%d') like '%' #{page.dateTime} '%'
+          </if>
+          <!--排序 desc是降序-->
+        order by
+        id desc
+        <!--分页查询-->
+      
+        limit  #{page.startNum} , #{page.pageSize}
+    </select>
+     <!--分页查询条数-->
+    <select id="getPageSearchCount" resultType="int">
+        select count(id) as count from borrow  where created_at is not null
+        <if test="page.key.studentId != null ">
+            and student_id = #{page.key.studentId}
+        </if>
+        <if test="page.key.teacherId != null ">
+            and teacher_id = #{page.key.teacherId}
+        </if>
+        <if test="page.key.checked != null ">
+            and checked = #{page.key.checked}
+        </if>
+        <if test="page.key.roomNo != null and page.key.roomNo != ''">
+            and  room_no = #{page.key.roomNo}
+        </if>
+        <!--使用时间搜索 不为空 则进入搜索条件-->
+        <if test="page.dateTime != null and page.dateTime != ''">
+            and  DATE_FORMAT(class_time,'%Y-%m-%d') like '%' #{page.dateTime} '%'
+        </if>
+    </select>
+
+   
+
+    <!--通过主键修改数据-->
+    <update id="edit">
+        update borrow
+        <set>
+            <if test="roomNo != null and roomNo != ''">
+                room_no = #{roomNo},
+            </if>
+            <if test="studentId != null">
+                student_id = #{studentId},
+            </if>
+            <if test="checked != null">
+                checked = #{checked},
+            </if>
+            <if test="startTime != null and startTime != ''">
+                start_time = #{startTime},
+            </if>
+            <if test="endTime != null and endTime != ''">
+                end_time = #{endTime},
+            </if>
+            <if test="reason != null and reason != ''">
+                reason = #{reason},
+            </if>
+            <if test="classTime != null">
+                class_time = #{classTime},
+            </if>
+            <if test="createdAt != null">
+                created_at = #{createdAt},
+            </if>
+            <if test="createdBy != null and createdBy != ''">
+                created_by = #{createdBy},
+            </if>
+            <if test="teacherId != null">
+                teacher_id = #{teacherId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from borrow where id = #{id}
+    </delete>
+    <select id="getByStudentId" resultMap="BorrowMap">
+        select * from borrow where student_id=#{studentId} and class_time=#{classTime} and start_time=#{startTime} and end_time=#{endTime} and  room_no=#{roomNo}
+    </select>
+
+    <select id="getByTeacherId" resultMap="BorrowMap">
+        select * from borrow where teacher_id=#{teacherId} and class_time=#{classTime} and start_time=#{startTime} and end_time=#{endTime} and  room_no=#{roomNo}
+    </select>
+    <!--同个时间段同个机房申请审核通过了 就不让它在点申请了-->
+    <select id="getByTime" resultMap="BorrowMap">
+        select * from borrow where class_time=#{classTime} and start_time=#{startTime} and end_time=#{endTime} and room_no=#{roomNo}
+    </select>
+    <!--根据机房号统计预约数量-->
+    <select id="getBorrowAnalyse" resultMap="BorrowMap">
+        select room_no, count(id) as count from borrow  where checked =1
+        group by room_no
+    </select>
+</mapper>
+
